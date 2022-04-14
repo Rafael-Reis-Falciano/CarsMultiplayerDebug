@@ -32,6 +32,8 @@ class Game
 
       cars = [car1, car2];
 
+      car1.addImage("bateu", batida);
+      car2.addImage("bateu", batida);
 
       moedas = new Group();
       combustiveis = new Group();
@@ -53,8 +55,8 @@ class Game
       ];
 
       //adiciona moedas, combustível e obstáculos
-      this.addSprites(moedas, 100, moedasImg, 0.09);
-      this.addSprites(combustiveis, 100, combustivelImg, 0.02);
+      this.addSprites(moedas, 30, moedasImg, 0.09);
+      this.addSprites(combustiveis, 20, combustivelImg, 0.02);
       this.addSprites(obstaculos,obstaclesPositions.length,obstacle1Image,0.04,obstaclesPositions);
     }
 
@@ -101,7 +103,11 @@ class Game
       image(pistaImg, 0, -height*6, width, height*6);
       
       //chamada para exibir o placar
-      //this.showLeaderboard();
+      this.showLeaderboard();
+
+      //chamada para exibir a vida e o combustível
+      this.mostrarVida();
+      this.mostrarCombustivel();
 
       //indice da matriz
       var index = 0;
@@ -120,9 +126,11 @@ class Game
       fill("red");
       ellipse(x,y,60,60);
 
-      //chamada das funções de combustivel e moeda
+      //chamada das funções de combustivel, moeda, obstáculo e colisão dos carros
       this.combustivel(index);
       this.moeda(index);
+      this.obstaculo(index);
+      this.colisaoCarros(index);
 
       //alterar a posição da camera do jogo na direção y
       camera.position.y = cars[index-1].position.y;
@@ -139,9 +147,9 @@ class Game
     this.playerControl(); 
 
     //linha de chegada 
-    const chegada = -height*6 + 100;
+    const chegada = height*6 - 100;
     console.log(player.positionY);
-    if(player.positionY < chegada)
+    if(player.positionY > chegada)
     { 
     console.log("entrou");
     gameState = 2; 
@@ -154,6 +162,7 @@ class Game
     //desenha os sprites
     drawSprites();
   }
+
   }
 
   telajogo(){
@@ -184,17 +193,17 @@ class Game
 
     if(keyIsDown(UP_ARROW)){
       this.playerMoving = true;
-      player.positionY += 10;
+      player.positionY += 40;
       player.update();
     }
 
     if(keyIsDown(LEFT_ARROW) && player.positionX > width/3 - 50){
-      player.positionX -= 5;
+      player.positionX -= 20;
       player.update();
     }
 
-    if(keyIsDown(RIGHT_ARROW) && player.positionX < width/2 - 300){
-      player.positionX += 5;
+    if(keyIsDown(RIGHT_ARROW) && player.positionX < width/2 + 290){
+      player.positionX += 20;
       player.update();
     }
   }
@@ -240,7 +249,7 @@ class Game
       }
       else
       {
-        x = random(width/2 + 150, width/2 - 150);
+        x = random(width/2 + 220, width/2 - 250);
         y = random(-height*4.5, height - 400);
       }
 
@@ -252,17 +261,30 @@ class Game
     }
   }
 
-  combustivel(index){
+  combustivel(index)
+  {
+    if(player.fuel>0 && this.playerMoving)
+    {
+      player.fuel -= 1;
+    }
+
     cars[index-1].overlap(combustiveis,function(collector,collected){
-      if(player.fuel < 200)
+      if(player.fuel <= 180)
       {
-        player.fuel += 50;
+        player.fuel += 20;
       }
       collected.remove();
     });
+
+    if(player.fuel <= 0)
+    {
+      gameState = 2;
+      this.gameOver();
+    }
   }
 
-  moeda(index){
+  moeda(index)
+  {
     cars[index-1].overlap(moedas,function(collector,collected){
       
       player.score += 10;
@@ -270,6 +292,98 @@ class Game
     
       collected.remove();
     });
+  }
+
+  obstaculo(index)
+  {
+    if(cars[index-1].collide(obstaculos))
+    {
+      if(player.life>0)
+      {
+        player.life -= 50;
+        if(player.positionX<width/2)
+        {
+        player.positionX += 80;
+        }
+        if(player.positionX>width/2)
+        {
+        player.positionX -= 80;
+        }
+      }
+    }
+
+    if(player.life<=0)
+    {
+      setTimeout(()=>{
+        this.gameOver();
+      }, 500)
+
+      car1.changeImage("bateu");
+      car2.changeImage("bateu");
+    }
+    player.update();
+  }
+
+  colisaoCarros(index)
+  {
+    if(index === 1)
+    {
+      if(cars[index-1].collide(cars[1]))
+      {
+        if(player.life>0)
+        {
+          player.life -= 50;
+          if(player.positionX<width/2)
+          {
+          player.positionX += 150;
+          }
+          if(player.positionX>width/2)
+          {
+          player.positionX -= 150;
+          }
+        }
+        if(player.life<=0)
+        {
+          setTimeout(()=>{
+            this.gameOver();
+          }, 500)
+
+          car1.changeImage("bateu");
+          car2.changeImage("bateu");
+        }
+        player.update();
+      }
+    }
+
+    if(index === 2)
+    {
+      if(cars[index-1].collide(cars[0]))
+      {
+        if(player.life>0)
+        {
+          player.life -= 50;
+          if(player.positionX<width/2)
+          {
+          player.positionX += 150;
+          }
+          if(player.positionX>width/2)
+          {
+          player.positionX -= 150;
+          }
+        }
+        if(player.life<=0)
+        {
+          setTimeout(()=>{
+            this.gameOver();
+          }, 500)
+
+          car1.changeImage("bateu");
+          car2.changeImage("bateu");
+        }
+        player.update();
+      }
+    }
+
   }
 
   showRank()
@@ -292,8 +406,27 @@ class Game
     confirmButtonText: "Ok" }) 
   }
 
+  mostrarVida()
+  {
+    push();
+    image(life, player.positionX-50, height- player.positionY-70, 20, 20);
+    fill("white");
+    rect(player.positionX+20, height- player.positionY-70, 200, 20);
+    fill("red");
+    rect(player.positionX+20, height- player.positionY-70, player.life, 20);
+    pop();
+  }
 
-
+  mostrarCombustivel()
+  {
+    push();
+    image(combustivelImg, player.positionX-50, height- player.positionY-90, 20, 20);
+    fill("white");
+    rect(player.positionX+20, height- player.positionY-90, 200, 20);
+    fill("brown");
+    rect(player.positionX+20, height- player.positionY-90, player.fuel, 20);
+    pop();
+  }
 
 
 
@@ -302,5 +435,3 @@ class Game
 
 
 }
-
-

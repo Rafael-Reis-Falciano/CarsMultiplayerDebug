@@ -9,6 +9,7 @@ var cars = [];
 
 var moedas, combustiveis, moedasImg, combustivelImg;
 var obstacle1Image, obstacle2Image, obstaculos;
+var life, batida;
 
 function preload() 
 {
@@ -20,6 +21,8 @@ function preload()
   combustivelImg = loadImage("assets/fuel.png");
   obstacle1Image = loadImage("assets/obstacle1.png");
   obstacle2Image = loadImage("assets/obstacle2.png");
+  life = loadImage("assets/life.png");
+  batida = loadImage("assets/blast.png");
 
 }
 
@@ -27,6 +30,7 @@ function setup()
 {
   canvas = createCanvas(windowWidth, windowHeight);
   database = firebase.database();
+  gameState = 0;
   game = new Game();
   game.getState();
   game.start();

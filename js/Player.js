@@ -10,6 +10,7 @@ class Player
     this.rank = 0;
     this.score = 0;
     this.fuel = 200;
+    this.life = 200;
   }
 
   updatePlayer(count)
@@ -65,6 +66,7 @@ class Player
       positionY: this.positionY,
       rank: this.rank,
       score: this.score,
+      life: this.life,
     })
   }
 
