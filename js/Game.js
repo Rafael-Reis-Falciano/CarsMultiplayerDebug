@@ -265,7 +265,7 @@ class Game
   {
     if(player.fuel>0 && this.playerMoving)
     {
-      player.fuel -= 1;
+      player.fuel -= 0.5;
     }
 
     cars[index-1].overlap(combustiveis,function(collector,collected){
